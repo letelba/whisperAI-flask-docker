@@ -2,17 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>File Upload</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Subtitle File Upload</h1>
+    <div class="container">
+        <h1>Upload File</h1>
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <label for="file-upload" class="custom-file-upload">
+                Choose File
+            </label>
+            {{ form.file(class_='file-upload', id='file-upload') }}
+            <span id="file-name">No file chosen</span>
+            <br>
+            {{ form.submit() }}
+        </form>
 
-    <form method='POST' enctype='multipart/form-data'>
-        {{form.hidden_tag()}}
-        {{form.file()}}
-        {{form.submit()}}
-    </form>
+        {% if transcript_file %}
+        <p>Your transcript is ready: <a href="{{ url_for('download_file', filename=transcript_file) }}">Download here</a></p>
+        {% endif %}
+    </div>
+
+    <script>
+        document.querySelector('.custom-file-upload').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector('#file-upload').click();
+        });
+
+        document.querySelector('#file-upload').addEventListener('change', function() {
+            var fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+            document.getElementById('file-name').textContent = fileName;
+        });
+    </script>
 </body>
 </html>

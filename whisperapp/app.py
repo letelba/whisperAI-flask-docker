@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 import os
 from wtforms.validators import InputRequired
 import subprocess
+import torch
 
 app = Flask(__name__)
 
@@ -23,14 +24,26 @@ def index():
         file = form.file.data
         filename = secure_filename(file.filename).replace("\\", "")
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+        # Ensure the upload folder exists
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
         file.save(file_path)
         print(f'Processing {filename}')
         
         # Define the output directory
         output_dir = app.config['UPLOAD_FOLDER']
         
-        # Run the whisper command
-        subprocess.run(['whisper', file_path, '--model', 'small', '--device', 'cuda', '--output_dir', output_dir, '--output_format', 'txt'])
+        # Determine if CUDA is available and set device accordingly
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print(f'Using device: {device}')
+        
+        # Run the whisper command with appropriate device
+        try:
+            subprocess.run(['whisper', file_path, '--model', 'small', '--device', device, '--output_dir', output_dir, '--output_format', 'txt'], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error occurred: {e}. Falling back to CPU.")
+            subprocess.run(['whisper', file_path, '--model', 'small', '--device', 'cpu', '--output_dir', output_dir, '--output_format', 'txt'], check=True)
         
         # Define the transcript file name
         base_filename = os.path.splitext(filename)[0]  # remove the extension
@@ -55,4 +68,5 @@ def download_file(filename):
     return send_from_directory(directory, filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching of static files
+    app.run(host='0.0.0.0', debug=True)

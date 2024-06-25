@@ -1,8 +1,12 @@
-version: '3'
+version: '3.9'
 
 services:
-  whisper-app:
+  flask-app:
     build: .
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     ports:
       - "5000:5000"
     volumes:

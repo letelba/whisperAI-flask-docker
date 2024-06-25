@@ -1,4 +1,5 @@
-FROM ubuntu:20.04
+FROM nvidia/cuda:11.6.2-base-ubuntu20.04
+
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /whisperapp
@@ -6,7 +7,9 @@ WORKDIR /whisperapp
 # Install system dependencies
 RUN apt-get -y update && apt-get install -y python3.9 \
     ffmpeg \
-    python3-pip
+    python3-pip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements.txt and install Python dependencies
 COPY requirements.txt requirements.txt

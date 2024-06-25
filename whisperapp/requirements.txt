@@ -1,4 +1,5 @@
-flask_wtf
+flask
+flask-wtf
 wtforms
 werkzeug
-numpy==1.26.4
+numpy==1.24.3 
